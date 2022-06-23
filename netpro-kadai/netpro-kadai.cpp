@@ -9,6 +9,13 @@
 //Email Addressの長さ
 #define EMAIL_ADDR_LEN 64
 
+//EmailとAddressの長い方
+#if NAME_LEN < EMAIL_ADDR_LEN
+	#define LONGEST_LEN EMAIL_ADDR_LEN
+#else
+	#define LONGEST_LEN NAME_LEN
+#endif
+
 //アドレステーブルの構造体
 struct RECORD
 {
@@ -28,7 +35,7 @@ int RecordCount = 0;
 //プロトタイプ宣言
 int Add(char [NAME_LEN], char [NAME_LEN], char [EMAIL_ADDR_LEN]);
 int Delete(int);
-int Find(char[NAME_LEN + EMAIL_ADDR_LEN], bool, bool, bool);
+int Find(char[LONGEST_LEN], bool, bool, bool);
 int Sort(int, bool);
 int RecordPrint(RECORD**, int);
 int ReadData();
@@ -37,20 +44,26 @@ int WriteData();
 //メイン関数
 int main()
 {	
-	char command, fname[NAME_LEN], lname[NAME_LEN], email[EMAIL_ADDR_LEN], keyword[NAME_LEN + EMAIL_ADDR_LEN];
-	int id;
+	char command[8];
 	bool nextLoop = true;
 
+	//データの読み込み
 	ReadData();
 
 	do {
 		//コマンド入力
-		scanf_s("%c", &command, 1);
+		gets_s(command, 8);
 		fflush(stdin);
 
-		switch (command)
+		switch (command[0])
 		{
 		case 'a':
+			//アドレス帳に要素を追加
+			
+			//宣言
+			char  fname[NAME_LEN], lname[NAME_LEN], email[EMAIL_ADDR_LEN];
+			int id;
+
 			//入力
 			printf("アドレス帳に追加します。\n");
 			printf("名: ");
@@ -59,37 +72,141 @@ int main()
 			scanf_s("%s", lname, NAME_LEN);
 			printf("メールアドレス: ");
 			scanf_s("%s", email, NAME_LEN);
+
 			//追加
 			id = Add(lname, fname, email);
+
 			//mes
 			printf("追加しました。ID=%d\n", id);
+
+			//追加完了
 			break;
 		case 'f':
-			printf("検索するキーワードを入力してください。\n");
-			scanf_s("%s", &keyword, NAME_LEN + EMAIL_ADDR_LEN);
-			Find(keyword, true, true, true);
+			//アドレス帳を検索
+			char keyword[LONGEST_LEN];
+			bool l, f, m;
+
+			//入力
+			printf("アドレス帳を検索します。\nキーワード: ");
+			scanf_s("%s", &keyword, LONGEST_LEN);
+
+			//検索条件
+			if (command[1] == '\0')
+				//条件指定なし
+				l = f = m = true;
+			else
+			{
+				//条件指定
+				l = f = m = false;
+				for (int i = 2; i < 5; i++)
+					switch (command[i])
+					{
+					case 'l':
+						l = true;
+						break;
+					case 'f':
+						f = true;
+						break;
+					case 'm':
+						m = true;
+						break;
+					}
+			}
+
+			//検索&表示
+			Find(keyword, f, l, m);
+
+			//検索完了
 			break;
 		case 'p':
-			int orderBy, order;
-			printf("ソート方法を入力してください。\nソート基準(lname=0, fname=1, email=2): ");
-			scanf_s("%d", &orderBy);
-			printf("ソート順(昇順=0, 降順=1): ");
-			scanf_s("%d", &order);
+		{
+			//ソートして表示
+			//ソート基準(lname=0, fname=1, email=2)
+			//ソート順(昇順=0, 降順=1)
+
+			//宣言&初期化
+			int orderBy = 0;
+			bool order = false;
+
+			//条件指定
+			if (command[1] != '\0')
+			{
+				//ソート基準の要素を取得
+				switch (command[2])
+				{
+				case 'l':
+					orderBy = 0;
+					break;
+				case 'f':
+					orderBy = 1;
+					break;
+				case 'm':
+					orderBy = 2;
+					break;
+				}
+
+				//ソート順を取得
+				switch (command[4])
+				{
+				case 'a':
+					order = 0;
+					break;
+				case 'd':
+					order = 1;
+					break;
+				}
+			}
+
+			//ソート&表示
 			Sort(orderBy, order);
+
+			//完了
 			break;
+		}
 		case 'd':
+			//要素の削除
+
+			//入力
 			printf("削除する要素のIDを入力してください。\nID: ");
 			scanf_s("%d", &id);
+
+			//削除
 			Delete(id);
+
+			//完了
+			break;
+		case 'h':
+			//Help
+			
+			//表示
+
+			//終了
 			break;
 		case 'q':
-			//次のコマンドを待ち受けずに終了
+			//終了
+			//q 保存して終了
+			//q! 保存せずに終了
+
+			//次に終了
 			nextLoop = false;
+
+			if (command[1] == '!')
+				//保存せずに終了
+				break;
+			else
+			{
+				//保存して終了
+
+				//保存
+				WriteData();
+
+				//終了
+				break;
+			}
+
 			break;
 		}
 	} while (nextLoop);
-
-	WriteData();
 
 	return 0;
 }
@@ -171,7 +288,7 @@ int Delete(int id)
 
 //キーワードで検索して表示
 //(検索キーワード, emailで検索, fnameで検索, lnameで検索)
-int Find(char keyword [NAME_LEN + EMAIL_ADDR_LEN], bool fFname, bool fLname, bool fEmail)
+int Find(char keyword [LONGEST_LEN], bool fFname, bool fLname, bool fEmail)
 {
 	RECORD* next;
 	bool find;

@@ -40,31 +40,42 @@ int Sort(int, bool);
 int RecordPrint(RECORD**, int);
 int ReadData();
 int WriteData();
+int HelpPrint();
+int ShortHelpPrint();
 
 //メイン関数
 int main()
 {	
+	//起動メッセージ
+	printf("================アドレス帳================\n\n");
+
+	//宣言
 	char command[8];
 	bool nextLoop = true;
 
 	//データの読み込み
 	ReadData();
 
+	ShortHelpPrint();
+
 	do {
 		//コマンド入力
-		gets_s(command, 8);
+		printf("コマンド:");
 		fflush(stdin);
+		gets_s(command, 8);
 
 		switch (command[0])
 		{
 		case 'a':
+		{
 			//アドレス帳に要素を追加
-			
+
 			//宣言
 			char  fname[NAME_LEN], lname[NAME_LEN], email[EMAIL_ADDR_LEN];
 			int id;
 
 			//入力
+			fflush(stdin);
 			printf("アドレス帳に追加します。\n");
 			printf("名: ");
 			scanf_s("%s", fname, NAME_LEN);
@@ -81,12 +92,15 @@ int main()
 
 			//追加完了
 			break;
+		}
 		case 'f':
+		{
 			//アドレス帳を検索
 			char keyword[LONGEST_LEN];
 			bool l, f, m;
 
 			//入力
+			fflush(stdin);
 			printf("アドレス帳を検索します。\nキーワード: ");
 			scanf_s("%s", &keyword, LONGEST_LEN);
 
@@ -118,6 +132,7 @@ int main()
 
 			//検索完了
 			break;
+		}
 		case 'p':
 		{
 			//ソートして表示
@@ -164,9 +179,14 @@ int main()
 			break;
 		}
 		case 'd':
+		{
 			//要素の削除
 
+			//宣言
+			int id;
+
 			//入力
+			fflush(stdin);
 			printf("削除する要素のIDを入力してください。\nID: ");
 			scanf_s("%d", &id);
 
@@ -175,14 +195,29 @@ int main()
 
 			//完了
 			break;
+		}
 		case 'h':
+		{
 			//Help
-			
+
 			//表示
+			HelpPrint();
 
 			//終了
 			break;
+		}
+		case 'u':
+		{
+			//簡易Help
+
+			//表示
+			ShortHelpPrint();
+
+			//終了
+			break;
+		}
 		case 'q':
+		{
 			//終了
 			//q 保存して終了
 			//q! 保存せずに終了
@@ -191,19 +226,33 @@ int main()
 			nextLoop = false;
 
 			if (command[1] == '!')
+			{
 				//保存せずに終了
+				printf("保存せずに終了します。\n");
 				break;
+			}
 			else
 			{
 				//保存して終了
 
 				//保存
-				WriteData();
+				int saveStatus = WriteData();
+				if (saveStatus == 0)
+					printf("保存して終了します。\n");
+				else
+				{
+					printf("保存せずに終了するにはq!を入力してください。\n");
+					nextLoop = true;
+				}
 
 				//終了
 				break;
 			}
 
+			break;
+		}
+		default:
+			printf("%Xは未定義コマンドです。\n", command[0]);
 			break;
 		}
 	} while (nextLoop);
@@ -463,7 +512,7 @@ int WriteData()
 	{
 		//ファイルが開けないor作成できない
 		printf("ファイルが開けない、又は作成できないため、データを保存できません。\n");
-		return 1;
+		return -1;
 	}
 
 	//データ数書き込み
@@ -475,6 +524,41 @@ int WriteData()
 
 	//ファイルを閉じる
 	fclose(fp);
+
+	return 0;
+}
+
+//操作方法を表示
+int HelpPrint()
+{
+	FILE* fp;
+
+	if (fopen_s(&fp, "how-to-use.txt", "r") != 0)
+	{
+		//ファイルが開けない
+		printf("how-to-use.txtが開けません。\n");
+		return -1;
+	}
+
+	char charBuf;
+	do{
+		//ファイルから入力
+		charBuf = getc(fp);
+		//標準出力
+		putc(charBuf, stdout);
+	}while (charBuf != EOF);
+
+	putc('\n', stdout);
+
+	fclose(fp);
+
+	return 0;
+}
+
+//簡易的な操作方法を表示
+int ShortHelpPrint()
+{
+	printf("表示:p [l or f or m] [a or d], 検索:f [l or f or m], 追加:a, 削除:d, 終了:q[!], 簡易ヘルプ:u, ヘルプ:h\n");
 
 	return 0;
 }

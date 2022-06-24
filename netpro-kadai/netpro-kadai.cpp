@@ -407,7 +407,7 @@ int Find(char keyword [LONGEST_LEN], bool fFname, bool fLname, bool fEmail)
 	if (count == 0)
 	{
 		printf("検索結果は見つかりませんでした。\n");
-		return 0;
+		return 1;
 	}
 
 	printf("検索結果 %d件\n", count);
@@ -471,6 +471,12 @@ int Sort(int orderBy, bool order)
 				p[j] = tmp;
 			}
 		}
+
+	if (RecordCount == 0)
+	{
+		printf("アドレス帳は空です。\n");
+		return 1;
+	}
 	
 	printf("アドレス帳 一覧\n");
 	RecordPrint(p, RecordCount);
@@ -543,7 +549,7 @@ int WriteData()
 	{
 		//ファイルが開けないor作成できない
 		printf("ファイルが開けない、又は作成できないため、データを保存できません。\n");
-		return -1;
+		return 1;
 	}
 
 	//データ数書き込み
@@ -568,7 +574,7 @@ int HelpPrint()
 	{
 		//ファイルが開けない
 		printf("how-to-use.txtが開けないため、Helpが表示できません。\n");
-		return -1;
+		return 1;
 	}
 
 	char charBuf;

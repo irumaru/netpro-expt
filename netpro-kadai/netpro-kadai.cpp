@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+//テスト
+
 //Fast Name, Last NAmeの各長さ
 //byte数+1
 #define NAME_LEN 64

@@ -56,13 +56,19 @@ int main()
 	//データの読み込み
 	ReadData();
 
+	//簡易ヘルプ
 	ShortHelpPrint();
+
+	//初回入力メッセージ
+	printf("コマンド:");
 
 	do {
 		//コマンド入力
-		printf("コマンド:");
-		fflush(stdin);
 		gets_s(command, 8);
+
+		//gets_s()で読み込まれた、scanf_sが原因の改行の読み飛ばし
+		if (command[0] == 0)
+			continue;
 
 		switch (command[0])
 		{
@@ -75,7 +81,6 @@ int main()
 			int id;
 
 			//入力
-			fflush(stdin);
 			printf("アドレス帳に追加します。\n");
 			printf("名: ");
 			scanf_s("%s", fname, NAME_LEN);
@@ -100,7 +105,6 @@ int main()
 			bool l, f, m;
 
 			//入力
-			fflush(stdin);
 			printf("アドレス帳を検索します。\nキーワード: ");
 			scanf_s("%s", &keyword, LONGEST_LEN);
 
@@ -186,7 +190,6 @@ int main()
 			int id;
 
 			//入力
-			fflush(stdin);
 			printf("削除する要素のIDを入力してください。\nID: ");
 			scanf_s("%d", &id);
 
@@ -229,7 +232,7 @@ int main()
 			{
 				//保存せずに終了
 				printf("保存せずに終了します。\n");
-				break;
+				return 0;
 			}
 			else
 			{
@@ -238,7 +241,10 @@ int main()
 				//保存
 				int saveStatus = WriteData();
 				if (saveStatus == 0)
+				{
 					printf("保存して終了します。\n");
+					return 0;
+				}
 				else
 				{
 					printf("保存せずに終了するにはq!を入力してください。\n");
@@ -255,6 +261,10 @@ int main()
 			printf("%Xは未定義コマンドです。\n", command[0]);
 			break;
 		}
+
+		//次回以降の入力メッセージ
+		printf("コマンド:");
+
 	} while (nextLoop);
 
 	return 0;

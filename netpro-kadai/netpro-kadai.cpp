@@ -33,7 +33,7 @@ int LastId = 0;
 int RecordCount = 0;
 
 //プロトタイプ宣言
-int Add(char [NAME_LEN], char [NAME_LEN], char [EMAIL_ADDR_LEN]);
+int Add(char [NAME_LEN], char [NAME_LEN], char [EMAIL_ADDR_LEN], int *);
 int Delete(int);
 int Find(char[LONGEST_LEN], bool, bool, bool);
 int Sort(int, bool);
@@ -45,7 +45,7 @@ int ShortHelpPrint();
 
 //メイン関数
 int main()
-{	
+{
 	//起動メッセージ
 	printf("================アドレス帳================\n\n");
 
@@ -78,7 +78,7 @@ int main()
 
 			//宣言
 			char  fname[NAME_LEN], lname[NAME_LEN], email[EMAIL_ADDR_LEN];
-			int id;
+			int id, status;
 
 			//入力
 			printf("アドレス帳に追加します。\n");
@@ -90,10 +90,14 @@ int main()
 			scanf_s("%s", email, NAME_LEN);
 
 			//追加
-			id = Add(lname, fname, email);
+			status = Add(lname, fname, email, &id);
 
-			//mes
-			printf("追加しました。ID=%d\n", id);
+			//エラーの検証
+			if (status == 0)
+				printf("追加しました。ID=%d\n", id);
+			else
+				//エラー
+				return -1;
 
 			//追加完了
 			break;
@@ -187,14 +191,28 @@ int main()
 			//要素の削除
 
 			//宣言
-			int id;
+			int id, status;
 
 			//入力
 			printf("削除する要素のIDを入力してください。\nID: ");
 			scanf_s("%d", &id);
 
 			//削除
-			Delete(id);
+			status = Delete(id);
+
+			//エラーの検証
+			switch (status)
+			{
+			case 0:
+				printf("ID=%dの要素を削除しました。\n", id);
+				break;
+			case 1:
+				printf("ID=%dの要素は見つかりませんでした。\n", id);
+				break;
+			default:
+				//エラー
+				return -1;
+			}
 
 			//完了
 			break;
@@ -258,7 +276,7 @@ int main()
 			break;
 		}
 		default:
-			printf("%Xは未定義コマンドです。\n", command[0]);
+			printf("%cは未定義コマンドです。\n", command[0]);
 			break;
 		}
 
@@ -271,7 +289,7 @@ int main()
 }
 
 //アドレステーブルにアドレスレコードを追加する
-int Add(char lname[NAME_LEN], char fname[NAME_LEN], char email[EMAIL_ADDR_LEN])
+int Add(char lname[NAME_LEN], char fname[NAME_LEN], char email[EMAIL_ADDR_LEN], int* id)
 {
 	//新しいレコードのポインタを宣言
 	RECORD* EmailRecordP;
@@ -313,7 +331,9 @@ int Add(char lname[NAME_LEN], char fname[NAME_LEN], char email[EMAIL_ADDR_LEN])
 	prev->next = EmailRecordP;
 
 	//IDを返す
-	return LastId;
+	*id = LastId;
+
+	return 0;
 }
 
 //レコードの削除
@@ -502,7 +522,8 @@ int ReadData()
 		fscanf_s(fp, "%s %s %s", fname, NAME_LEN, lname, NAME_LEN, email, EMAIL_ADDR_LEN);
 
 		//テーブルに追加
-		Add(lname, fname, email);
+		int id;
+		Add(lname, fname, email, &id);
 	}
 
 	//ファイルを閉じる
@@ -546,7 +567,7 @@ int HelpPrint()
 	if (fopen_s(&fp, "how-to-use.txt", "r") != 0)
 	{
 		//ファイルが開けない
-		printf("how-to-use.txtが開けません。\n");
+		printf("how-to-use.txtが開けないため、Helpが表示できません。\n");
 		return -1;
 	}
 
